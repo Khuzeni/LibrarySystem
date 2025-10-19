@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Your existing CSS styles here */
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar {
+            background-color: var(--primary);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            padding-top: 20px;
+        }
+
+        .sidebar a {
+            color: white;
+            padding: 15px 20px;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: var(--secondary);
+        }
+
+        .sidebar a.active {
+            background-color: var(--secondary);
+            border-left: 4px solid var(--accent);
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+
+        .navbar {
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background-color: var(--secondary);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .table-responsive {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .table th {
+            background-color: var(--primary);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<!-- Your existing HTML structure here -->
+<!-- Sidebar -->
+<div class="sidebar col-md-2 col-lg-2 d-md-block">
+    <div class="text-center mb-4">
+        <h3><i class="fas fa-book-open"></i> LibrarySystem</h3>
+    </div>
+    <a href="#" class="active" data-section="dashboard"><i class="fas fa-home"></i> Dashboard</a>
+    <a href="#" data-section="books"><i class="fas fa-book"></i> Books</a>
+    <a href="#" data-section="members"><i class="fas fa-users"></i> Members</a>
+    <a href="#" data-section="loans"><i class="fas fa-exchange-alt"></i> Loans</a>
+    <a href="#" data-section="librarians"><i class="fas fa-user-tie"></i> Librarians</a>
+    <a href="#" data-section="reports"><i class="fas fa-chart-bar"></i> Reports</a>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg mb-4">
+        <div class="container-fluid">
+            <h4 class="navbar-brand">Library Management System</h4>
+            <div class="d-flex">
+                    <span class="navbar-text me-3">
+                        <i class="fas fa-user-circle"></i> Admin
+                    </span>
+                <button class="btn btn-outline-secondary">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Test Connection Button -->
+    <div class="alert alert-info">
+        <strong>Debug Mode:</strong>
+        <button onclick="testConnection()" class="btn btn-sm btn-warning ms-2">Test API Connection</button>
+        <button onclick="loadAllData()" class="btn btn-sm btn-success ms-2">Load All Data</button>
+        <span id="connectionStatus" class="ms-2"></span>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div id="dashboard" class="section active">
+        <h2 class="mb-4">Dashboard</h2>
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <i class="fas fa-book fa-2x mb-2"></i>
+                        <div class="stat-number" id="totalBooks">0</div>
+                        <p>Total Books</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <i class="fas fa-users fa-2x mb-2"></i>
+                        <div class="stat-number" id="totalMembers">0</div>
+                        <p>Total Members</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <i class="fas fa-exchange-alt fa-2x mb-2"></i>
+                        <div class="stat-number" id="activeLoans">0</div>
+                        <p>Active Loans</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <i class="fas fa-clock fa-2x mb-2"></i>
+                        <div class="stat-number" id="overdueBooks">0</div>
+                        <p>Overdue Books</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5>Recent Loans</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group" id="recentLoansList">
+                            <div class="list-group-item">No recent loans</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5>Recently Added Books</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group" id="recentBooksList">
+                            <div class="list-group-item">No recent books</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Books Section -->
+    <div id="books" class="section">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Book Management</h2>
+            <button class="btn btn-primary" onclick="showAddBookModal()">
+                <i class="fas fa-plus"></i> Add New Book
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                        <tr>
+                            <th>Book ID</th>
+                            <th>Title</th>
+                            <th>Author</th>
+                            <th>ISBN</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody id="booksTableBody">
+                        <tr>
+                            <td colspan="6" class="text-center">Loading books...</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Members Section -->
+    <div id="members" class="section">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Member Management</h2>
+            <button class="btn btn-primary" onclick="showAddMemberModal()">
+                <i class="fas fa-plus"></i> Add New Member
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                        <tr>
+                            <th>Member ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone Number</th>
+                            <th>Active Loans</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody id="membersTableBody">
+                        <tr>
+                            <td colspan="6" class="text-center">Loading members...</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loans Section -->
+    <div id="loans" class="section">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Loan Management</h2>
+            <button class="btn btn-primary" onclick="showAddLoanModal()">
+                <i class="fas fa-plus"></i> Create New Loan
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                        <tr>
+                            <th>Loan ID</th>
+                            <th>Book Title</th>
+                            <th>Member</th>
+                            <th>Loan Date</th>
+                            <th>Due Date</th>
+                            <th>Return Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody id="loansTableBody">
+                        <tr>
+                            <td colspan="8" class="text-center">Loading loans...</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Other sections... -->
+</div>
+
+<!-- Add Book Modal -->
+<div class="modal fade" id="addBookModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Book</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addBookForm">
+                    <div class="mb-3">
+                        <label for="bookTitle" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="bookTitle" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="bookAuthor" class="form-label">Author</label>
+                        <input type="text" class="form-control" id="bookAuthor" name="author" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="bookIsbn" class="form-label">ISBN</label>
+                        <input type="text" class="form-control" id="bookIsbn" name="isbn" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Book</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Member Modal -->
+<div class="modal fade" id="addMemberModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Member</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addMemberForm">
+                    <div class="mb-3">
+                        <label for="memberName" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="memberName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="memberEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="memberEmail" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="memberPhone" class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="memberPhone" name="phoneNumber" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Member</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // API Configuration
+    const API_BASE_URL = 'http://localhost:8080/api';
+    console.log('Frontend loaded. API Base URL:', API_BASE_URL);
+
+    // API Service Functions
+    const apiService = {
+        async makeRequest(url, options = {}) {
+            try {
+                console.log('Making request to:', url);
+                const response = await fetch(url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('API request failed:', error);
+                throw error;
+            }
+        },
+
+        // Books
+        async getBooks() {
+            return await this.makeRequest(`${API_BASE_URL}/books`);
+        },
+
+        async createBook(bookData) {
+            return await this.makeRequest(`${API_BASE_URL}/books`, {
+                method: 'POST',
+                body: JSON.stringify(bookData)
+            });
+        },
+
+        async deleteBook(id) {
+            return await this.makeRequest(`${API_BASE_URL}/books/${id}`, {
+                method: 'DELETE'
+            });
+        },
+
+        // Members
+        async getMembers() {
+            return await this.makeRequest(`${API_BASE_URL}/members`);
+        },
+
+        async createMember(memberData) {
+            return await this.makeRequest(`${API_BASE_URL}/members`, {
+                method: 'POST',
+                body: JSON.stringify(memberData)
+            });
+        },
+
+        // Loans
+        async getLoans() {
+            return await this.makeRequest(`${API_BASE_URL}/loans`);
+        },
+
+        async createLoan(loanData) {
+            return await this.makeRequest(`${API_BASE_URL}/loans`, {
+                method: 'POST',
+                body: JSON.stringify(loanData)
+            });
+        },
+
+        async returnBook(loanId) {
+            return await this.makeRequest(`${API_BASE_URL}/loans/${loanId}/return`, {
+                method: 'PUT'
+            });
+        },
+
+        // Dashboard
+        async getDashboardStats() {
+            return await this.makeRequest(`${API_BASE_URL}/dashboard/stats`);
+        }
+    };
+
+    // UI Management
+    const uiManager = {
+        async loadBooks() {
+            try {
+                const books = await apiService.getBooks();
+                const tbody = document.getElementById('booksTableBody');
+
+                tbody.innerHTML = books.map(book => `
+                        <tr>
+                            <td>${book.bookId}</td>
+                            <td>${book.title}</td>
+                            <td>${book.author}</td>
+                            <td>${book.isbn}</td>
+                            <td>
+                                <span class="badge ${book.available ? 'bg-success' : 'bg-danger'}">
+                                    ${book.available ? 'Available' : 'On Loan'}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-info" onclick="viewBook(${book.bookId})">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-warning" onclick="editBook(${book.bookId})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteBook(${book.bookId})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+            } catch (error) {
+                document.getElementById('booksTableBody').innerHTML =
+                    '<tr><td colspan="6" class="text-center text-danger">Error loading books</td></tr>';
+            }
+        },
+
+        async loadMembers() {
+            try {
+                const members = await apiService.getMembers();
+                const tbody = document.getElementById('membersTableBody');
+
+                tbody.innerHTML = members.map(member => `
+                        <tr>
+                            <td>${member.memberId}</td>
+                            <td>${member.name}</td>
+                            <td>${member.email}</td>
+                            <td>${member.phoneNumber}</td>
+                            <td>0</td>
+                            <td>
+                                <button class="btn btn-sm btn-info"><i class="fas fa-eye"></i></button>
+                                <button class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `).join('');
+            } catch (error) {
+                document.getElementById('membersTableBody').innerHTML =
+                    '<tr><td colspan="6" class="text-center text-danger">Error loading members</td></tr>';
+            }
+        },
+
+        async loadLoans() {
+            try {
+                const loans = await apiService.getLoans();
+                const tbody = document.getElementById('loansTableBody');
+
+                tbody.innerHTML = loans.map(loan => {
+                    const dueDate = new Date(loan.dueDate);
+                    const isOverdue = !loan.returnDate && dueDate < new Date();
+                    const statusClass = loan.returnDate ? 'bg-success' : (isOverdue ? 'bg-danger' : 'bg-warning');
+                    const statusText = loan.returnDate ? 'Returned' : (isOverdue ? 'Overdue' : 'Active');
+
+                    return `
+                            <tr>
+                                <td>${loan.loanId}</td>
+                                <td>${loan.book?.title || 'Unknown'}</td>
+                                <td>${loan.member?.name || 'Unknown'}</td>
+                                <td>${loan.loanDate}</td>
+                                <td>${loan.dueDate}</td>
+                                <td>${loan.returnDate || '-'}</td>
+                                <td>
+                                    <span class="badge ${statusClass}">${statusText}</span>
+                                </td>
+                                <td>
+                                    ${!loan.returnDate ?
+                        `<button class="btn btn-sm btn-success" onclick="returnBook(${loan.loanId})">
+                                            <i class="fas fa-check"></i> Return
+                                        </button>` :
+                        'Returned'
+                    }
+                                </td>
+                            </tr>
+                        `;
+                }).join('');
+            } catch (error) {
+                document.getElementById('loansTableBody').innerHTML =
+                    '<tr><td colspan="8" class="text-center text-danger">Error loading loans</td></tr>';
+            }
+        },
+
+        async loadDashboard() {
+            try {
+                const stats = await apiService.getDashboardStats();
+                document.getElementById('totalBooks').textContent = stats.totalBooks || '0';
+                document.getElementById('totalMembers').textContent = stats.totalMembers || '0';
+                document.getElementById('activeLoans').textContent = stats.activeLoans || '0';
+                document.getElementById('overdueBooks').textContent = stats.overdueBooks || '0';
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+    };
+
+    // Global Functions
+    window.testConnection = async function() {
+        const statusElement = document.getElementById('connectionStatus');
+        try {
+            statusElement.innerHTML = '<span class="text-warning">Testing connection...</span>';
+            const books = await apiService.getBooks();
+            statusElement.innerHTML = `<span class="text-success">✓ Connected! Found ${books.length} books</span>`;
+        } catch (error) {
+            statusElement.innerHTML = `<span class="text-danger">✗ Connection failed: ${error.message}</span>`;
+        }
+    };
+
+    window.loadAllData = async function() {
+        await uiManager.loadDashboard();
+        await uiManager.loadBooks();
+        await uiManager.loadMembers();
+        await uiManager.loadLoans();
+        showAlert('All data loaded successfully!', 'success');
+    };
+
+    window.showAddBookModal = function() {
+        new bootstrap.Modal(document.getElementById('addBookModal')).show();
+    };
+
+    window.showAddMemberModal = function() {
+        new bootstrap.Modal(document.getElementById('addMemberModal')).show();
+    };
+
+    window.showAddLoanModal = function() {
+        new bootstrap.Modal(document.getElementById('addLoanModal')).show();
+    };
+
+    window.deleteBook = async function(bookId) {
+        if (confirm('Are you sure you want to delete this book?')) {
+            try {
+                await apiService.deleteBook(bookId);
+                await uiManager.loadBooks();
+                await uiManager.loadDashboard();
+                showAlert('Book deleted successfully!', 'success');
+            } catch (error) {
+                showAlert('Error deleting book: ' + error.message, 'danger');
+            }
+        }
+    };
+
+    window.returnBook = async function(loanId) {
+        try {
+            await apiService.returnBook(loanId);
+            await uiManager.loadLoans();
+            await uiManager.loadDashboard();
+            showAlert('Book returned successfully!', 'success');
+        } catch (error) {
+            showAlert('Error returning book: ' + error.message, 'danger');
+        }
+    };
+
+    // Form Handlers
+    document.getElementById('addBookForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const bookData = {
+            title: formData.get('title'),
+            author: formData.get('author'),
+            isbn: formData.get('isbn'),
+            available: true
+        };
+
+        try {
+            await apiService.createBook(bookData);
+            bootstrap.Modal.getInstance(document.getElementById('addBookModal')).hide();
+            this.reset();
+            await uiManager.loadBooks();
+            await uiManager.loadDashboard();
+            showAlert('Book added successfully!', 'success');
+        } catch (error) {
+            showAlert('Error adding book: ' + error.message, 'danger');
+        }
+    });
+
+    document.getElementById('addMemberForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const memberData = {
+            name: formData.get('name'),
+            email: formData.get('email'),
+            phoneNumber: formData.get('phoneNumber')
+        };
+
+        try {
+            await apiService.createMember(memberData);
+            bootstrap.Modal.getInstance(document.getElementById('addMemberModal')).hide();
+            this.reset();
+            await uiManager.loadMembers();
+            await uiManager.loadDashboard();
+            showAlert('Member added successfully!', 'success');
+        } catch (error) {
+            showAlert('Error adding member: ' + error.message, 'danger');
+        }
+    });
+
+    // Navigation
+    document.querySelectorAll('.sidebar a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // Update active link
+            document.querySelectorAll('.sidebar a').forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+
+            // Show/hide sections
+            document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+            document.getElementById(this.getAttribute('data-section')).classList.add('active');
+
+            // Load section data
+            switch(this.getAttribute('data-section')) {
+                case 'books':
+                    uiManager.loadBooks();
+                    break;
+                case 'members':
+                    uiManager.loadMembers();
+                    break;
+                case 'loans':
+                    uiManager.loadLoans();
+                    break;
+                case 'dashboard':
+                    uiManager.loadDashboard();
+                    break;
+            }
+        });
+    });
+
+    // Utility Functions
+    function showAlert(message, type) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+        document.querySelector('.main-content').prepend(alertDiv);
+        setTimeout(() => alertDiv.remove(), 5000);
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Library System initialized');
+        uiManager.loadDashboard();
+
+        // Test connection on startup
+        setTimeout(() => {
+            testConnection();
+        }, 1000);
+    });
+
+    // Make apiService globally available for testing
+    window.apiService = apiService;
+</script>
+</body>
+</html>
